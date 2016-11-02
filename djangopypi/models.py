@@ -1,10 +1,11 @@
 import os
+import simplejson as json
+
 from django.conf import settings
-from django.db import models
-from django.utils.translation import ugettext_lazy as _
-from django.utils import simplejson as json
-from django.utils.datastructures import MultiValueDict
 from django.contrib.auth.models import User
+from django.db import models
+from django.utils.datastructures import MultiValueDict
+from django.utils.translation import ugettext_lazy as _
 
 
 
@@ -188,7 +189,7 @@ except ImportError:
 class MasterIndex(models.Model):
     title = models.CharField(max_length=255)
     url = models.CharField(max_length=255)
-    
+
     def __unicode__(self):
         return self.title
 
@@ -197,9 +198,9 @@ class MirrorLog(models.Model):
     created = models.DateTimeField(default='now')
     releases_added = models.ManyToManyField(Release, blank=True,
                                             related_name='mirror_sources')
-    
+
     def __unicode__(self):
         return '%s (%s)' % (self.master, str(self.created),)
-    
+
     class Meta:
         get_latest_by = "created"
