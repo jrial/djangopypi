@@ -20,40 +20,39 @@ def parse_distutils_request(request):
     """ This is being used because the built in request parser that Django uses,
     django.http.multipartparser.MultiPartParser is interperting the POST data
     incorrectly and/or the post data coming from distutils is invalid.
-    
-    One portion of this is the end marker: \r\n\r\n (what Django expects) 
-    versus \n\n (what distutils is sending). 
+
+    One portion of this is the end marker: \r\n\r\n (what Django expects)
+    versus \n\n (what distutils is sending).
     """
-    
     try:
-        sep = request.raw_post_data.splitlines()[1]
+        sep = request.body.splitlines()[1]
     except:
         raise ValueError('Invalid post data')
-    
-    
+
+
     request.POST = QueryDict('',mutable=True)
     try:
         request._files = MultiValueDict()
     except Exception, e:
         pass
-    
-    for part in filter(lambda e: e.strip(), request.raw_post_data.split(sep)):
+
+    for part in filter(lambda e: e.strip(), request.body.split(sep)):
         try:
             header, content = part.lstrip().split('\n',1)
         except Exception, e:
             continue
-        
+
         if content.startswith('\n'):
             content = content[1:]
-        
+
         if content.endswith('\n'):
             content = content[:-1]
-        
+
         headers = parse_header(header)
-        
+
         if "name" not in headers:
             continue
-        
+
         if "filename" in headers:
             dist = TemporaryUploadedFile(name=headers["filename"],
                                          size=len(content),
@@ -76,9 +75,9 @@ def parse_header(header):
         except ValueError:
             continue
         headers[key.strip()] = value.strip('"')
-    
+
     return headers
-    
+
 
 def login_basic_auth(request):
     authentication = request.META.get("HTTP_AUTHORIZATION")

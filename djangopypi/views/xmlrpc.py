@@ -19,7 +19,7 @@ def parse_xmlrpc_request(request):
     """
     Parse the request and dispatch to the appropriate view
     """
-    args, command = xmlrpclib.loads(request.raw_post_data)
+    args, command = xmlrpclib.loads(request.body)
     
     if command in settings.DJANGOPYPI_XMLRPC_COMMANDS:
         return settings.DJANGOPYPI_XMLRPC_COMMANDS[command](request, *args)

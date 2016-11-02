@@ -21,3 +21,4 @@ Authors/Contributors
 * Stefano Rivera <stefano@rivera.za.net>
 * David Miller <david@deadpansincerity.com>
 * Tomasz Wysocki
+* Juan Rial <jrial@safehex.be>

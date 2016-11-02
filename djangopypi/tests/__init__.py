@@ -76,8 +76,8 @@ def create_request(data):
 
 # class MockRequest(object):
 # 
-#     def __init__(self, raw_post_data):
-#         self.raw_post_data = raw_post_data
+#     def __init__(self, body):
+#         self.body = body
 #         self.META = {}
 # 
 # 
@@ -85,8 +85,8 @@ def create_request(data):
 # 
 #     def test_weird_post_data(self):
 #         data = create_post_data("submit")
-#         raw_post_data = create_request(data)
-#         post, files = parse_distutils_request(MockRequest(raw_post_data))
+#         body = create_request(data)
+#         post, files = parse_distutils_request(MockRequest(body))
 #         self.assertTrue(post)
 # 
 #         for key in post.keys():
@@ -120,11 +120,11 @@ class TestSimpleView(unittest.TestCase):
     def create_distutils_httprequest(self, user_data={}):
         self.post_data = create_post_data(action='user')        
         self.post_data.update(user_data)
-        self.raw_post_data = create_request(self.post_data)
+        self.body = create_request(self.post_data)
         request = HttpRequest()
         request.POST = self.post_data
         request.method = "POST"
-        request.raw_post_data = self.raw_post_data
+        request.body = self.body
         return request      
         
     # def test_user_registration(self):        
