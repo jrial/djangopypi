@@ -4,7 +4,10 @@ from django.http import Http404, HttpResponseRedirect
 from django.forms.models import inlineformset_factory
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
-from django.views.generic import list_detail, create_update
+from django.views.generic.detail import DetailView
+from django.views.generic.list import ListView
+from django.views.generic.edit import UpdateView
+from django.views.generic.base import RedirectView
 
 from djangopypi.decorators import user_owns_package, user_maintains_package
 from djangopypi.models import Package, Release
@@ -13,22 +16,23 @@ from djangopypi.forms import SimplePackageSearchForm, PackageForm
 
 
 def index(request, **kwargs):
-    kwargs.setdefault('template_object_name', 'package')
+    kwargs.setdefault('context_object_name', 'package_list')
     kwargs.setdefault('queryset', Package.objects.all())
-    return list_detail.object_list(request, **kwargs)
+    return ListView.as_view(**kwargs)(request)
 
 def simple_index(request, **kwargs):
     kwargs.setdefault('template_name', 'djangopypi/package_list_simple.html')
     return index(request, **kwargs)
 
 def details(request, package, proxy_folder='pypi', **kwargs):
-    kwargs.setdefault('template_object_name', 'package')
+    kwargs.setdefault('context_object_name', 'package')
     kwargs.setdefault('queryset', Package.objects.all())
+    kwargs.setdefault('pk', package)
     try:
-        return list_detail.object_detail(request, object_id=package, **kwargs)
+        return DetailView.as_view(**kwargs)(request)
     except Http404, e:
         if settings.DJANGOPYPI_PROXY_MISSING:
-            return HttpResponseRedirect('%s/%s/%s/' % 
+            return HttpResponseRedirect('%s/%s/%s/' %
                                         (settings.DJANGOPYPI_PROXY_BASE_URL.rstrip('/'),
                                          proxy_folder,
                                          package))
@@ -42,7 +46,7 @@ def simple_details(request, package, **kwargs):
 
 def doap(request, package, **kwargs):
     kwargs.setdefault('template_name', 'djangopypi/package_doap.xml')
-    kwargs.setdefault('mimetype', 'text/xml')
+    # kwargs.setdefault('mimetype', 'text/xml')
     return details(request, package, **kwargs)
 
 def search(request, **kwargs):
@@ -50,21 +54,21 @@ def search(request, **kwargs):
         form = SimplePackageSearchForm(request.POST)
     else:
         form = SimplePackageSearchForm(request.GET)
-    
+
     if form.is_valid():
         q = form.cleaned_data['query']
-        kwargs['queryset'] = Package.objects.filter(Q(name__contains=q) | 
+        kwargs['queryset'] = Package.objects.filter(Q(name__contains=q) |
                                                     Q(releases__package_info__contains=q)).distinct()
     return index(request, **kwargs)
 
 @user_owns_package()
 def manage(request, package, **kwargs):
-    kwargs['object_id'] = package
+    kwargs['pk'] = package
     kwargs.setdefault('form_class', PackageForm)
     kwargs.setdefault('template_name', 'djangopypi/package_manage.html')
-    kwargs.setdefault('template_object_name', 'package')
+    kwargs.setdefault('context_object_name', 'package')
 
-    return create_update.update_object(request, **kwargs)
+    return UpdateView.as_view(**kwargs)(request)
 
 @user_maintains_package()
 def manage_versions(request, package, **kwargs):
@@ -77,7 +81,7 @@ def manage_versions(request, package, **kwargs):
     kwargs.setdefault('template_name', 'djangopypi/package_manage_versions.html')
     kwargs.setdefault('template_object_name', 'package')
     kwargs.setdefault('extra_context',{})
-    kwargs.setdefault('mimetype',settings.DEFAULT_CONTENT_TYPE)
+    # kwargs.setdefault('mimetype',settings.DEFAULT_CONTENT_TYPE)
     kwargs['extra_context'][kwargs['template_object_name']] = package
     kwargs.setdefault('formset_kwargs',{})
     kwargs['formset_kwargs']['instance'] = package
@@ -86,7 +90,7 @@ def manage_versions(request, package, **kwargs):
         formset = kwargs['formset_factory'](data=request.POST, **kwargs['formset_kwargs'])
         if formset.is_valid():
             formset.save()
-            return create_update.redirect(kwargs.get('post_save_redirect', None),
+            return RedirectView.as_view(kwargs.get('post_save_redirect', None),
                                           package)
 
     formset = kwargs['formset_factory'](**kwargs['formset_kwargs'])
@@ -94,5 +98,5 @@ def manage_versions(request, package, **kwargs):
     kwargs['extra_context']['formset'] = formset
 
     return render_to_response(kwargs['template_name'], kwargs['extra_context'],
-                              context_instance=RequestContext(request),
-                              mimetype=kwargs['mimetype'])
+                              context_instance=RequestContext(request),)
+                            #   mimetype=kwargs['mimetype'])
