@@ -49,13 +49,14 @@ def manage(request, package, version, **kwargs):
         raise Http404('Version %s does not exist for %s' % (version,
                                                             package,))
 
-    kwargs['pk'] = release.pk
+    # kwargs['pk'] = release.pk
 
     kwargs.setdefault('form_class', ReleaseForm)
     kwargs.setdefault('template_name', 'djangopypi/release_manage.html')
     kwargs.setdefault('context_object_name', 'release')
+    kwargs.setdefault('queryset', Release.objects.all())
 
-    return UpdateView.as_view(**kwargs)(request)
+    return UpdateView.as_view(**kwargs)(request, pk=release.pk)
 
 @user_maintains_package()
 def manage_metadata(request, package, version, **kwargs):
@@ -175,7 +176,7 @@ def upload_file(request, package, version, **kwargs):
             dist.uploader = request.user
             dist.save()
 
-            return RedirectView.as_view(kwargs.get('post_save_redirect'),
+            return RedirectView.as_view(**kwargs)(kwargs.get('post_save_redirect'),
                                           release)
     else:
         form = kwargs['form_factory']()

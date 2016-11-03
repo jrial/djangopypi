@@ -10,18 +10,14 @@ urlpatterns = patterns("djangopypi.views",
     url(r'^pypi/$', 'root', name='djangopypi-release-index'),
     url(r'^rss/$', ReleaseFeed(), name='djangopypi-rss'),
 
-    # FIXME: Keyword arg 'pk'
     url(r'^simple/(?P<package>[\w\d_\.\-]+)/$','packages.simple_details',
         name='djangopypi-package-simple'),
-    # FIXME: Keyword arg 'pk'
     url(r'^pypi/(?P<package>[\w\d_\.\-]+)/$','packages.details',
         name='djangopypi-package'),
     url(r'^pypi/(?P<package>[\w\d_\.\-]+)/rss/$', ReleaseFeed(),
         name='djangopypi-package-rss'),
-    # FIXME: Keyword arg 'pk'
     url(r'^pypi/(?P<package>[\w\d_\.\-]+)/doap.rdf$','packages.doap',
         name='djangopypi-package-doap'),
-    # FIXME: Keyword arg 'pk'
     url(r'^pypi/(?P<package>[\w\d_\.\-]+)/manage/$','packages.manage',
         name='djangopypi-package-manage'),
     url(r'^pypi/(?P<package>[\w\d_\.\-]+)/manage/versions/$','packages.manage_versions',
@@ -31,7 +27,6 @@ urlpatterns = patterns("djangopypi.views",
         'releases.details',name='djangopypi-release'),
     url(r'^pypi/(?P<package>[\w\d_\.\-]+)/(?P<version>[\w\d_\.\-]+)/doap.rdf$',
         'releases.doap',name='djangopypi-release-doap'),
-    # FIXME: Keyword arg 'pk'
     url(r'^pypi/(?P<package>[\w\d_\.\-]+)/(?P<version>[\w\d_\.\-]+)/manage/$',
         'releases.manage',name='djangopypi-release-manage'),
     url(r'^pypi/(?P<package>[\w\d_\.\-]+)/(?P<version>[\w\d_\.\-]+)/metadata/$',
