@@ -27,9 +27,9 @@ def simple_index(request, **kwargs):
 def details(request, package, proxy_folder='pypi', **kwargs):
     kwargs.setdefault('context_object_name', 'package')
     kwargs.setdefault('queryset', Package.objects.all())
-    # kwargs.setdefault('pk', package)
     try:
-        return DetailView.as_view(**kwargs)(request, pk=package)
+        pk = Package.objects.get(pk__iexact=package).pk
+        return DetailView.as_view(**kwargs)(request, pk=pk)
     except Http404, e:
         if settings.DJANGOPYPI_PROXY_MISSING:
             return HttpResponseRedirect('%s/%s/%s/' %
@@ -63,12 +63,14 @@ def search(request, **kwargs):
 
 @user_owns_package()
 def manage(request, package, **kwargs):
-    # kwargs['pk'] = package
     kwargs.setdefault('form_class', PackageForm)
     kwargs.setdefault('queryset', Package.objects.all())
     kwargs.setdefault('template_name', 'djangopypi/package_manage.html')
     kwargs.setdefault('context_object_name', 'package')
 
+    # We could do case insensitive search here, like in details(),
+    # but it's pointless. This will only be visisted in-browser
+    # and the links leading to it are properly cased.
     return UpdateView.as_view(**kwargs)(request, pk=package)
 
 @user_maintains_package()
